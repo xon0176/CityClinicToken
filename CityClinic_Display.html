@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>City Clinic Token Display</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(90deg, #1c0644, #a7207d);
+      color: white;
+      overflow: hidden;
+    }
+    .container {
+      display: flex;
+      height: calc(100vh - 200px);
+      width: 100vw;
+      box-sizing: border-box;
+      padding: 0 60px;
+    }
+    .left, .right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .left img {
+      width: 650px;
+      max-width: 700px;
+      height: auto;
+    }
+    .token-label {
+      font-size: 3.2em;
+      margin-bottom: 0.4em;
+      font-weight: 500;
+    }
+    .token-number {
+      font-size: 12.5em;
+      font-weight: bold;
+      color: #ffffff;
+      margin-bottom: 0.2em;
+    }
+    .token-text {
+      font-size: 2.8em;
+    }
+    .info-row {
+      position: fixed;
+      bottom: 100px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2.1em;
+      color: #fff;
+      opacity: 0.95;
+      gap: 250px;
+    }
+    .info-box {
+      width: 200px;
+      text-align: center;
+    }
+    .footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #000;
+      color: #ffffff;
+      font-size: 2.4em;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .scroll-text {
+      display: inline-block;
+      padding-left: 100%;
+      animation: scroll-left 25s linear infinite;
+    }
+    @keyframes scroll-left {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-100%); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="left">
+    <img src="logo.png" alt="City Clinic Logo" />
+  </div>
+  <div class="right">
+    <div class="token-label">Now serving</div>
+    <div class="token-number" id="tokenNumber">C1</div>
+    <div class="token-text">Number</div>
+  </div>
+</div>
+
+<!-- Info Row -->
+<div class="info-row">
+  <div class="info-box">
+    <div>🌡️</div>
+    <div id="temperature">--°C</div>
+  </div>
+  <div class="info-box">
+    <div>💨</div>
+    <div id="wind">-- km/h</div>
+  </div>
+  <div class="info-box">
+    <div id="dateClock">--:--</div>
+    <div id="dateAlt">-- --, ----</div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="scroll-text">
+    😊 Welcome to City Clinic – Kanavalli 🏥 • Opened Everyday • Morning 9:30–1:30 • Evening 6:00–10:00 • Stay healthy & safe! 💊
+  </div>
+</div>
+
+<!-- Bell Sound -->
+<audio id="bellSound" src="https://actions.google.com/sounds/v1/alarms/assorted_computer_sounds.ogg" preload="auto"></audio>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+  // Firebase configuration (REPLACE WITH YOUR VALUES)
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+
+  // DOM elements
+  const tokenEl = document.getElementById('tokenNumber');
+  const bellSound = document.getElementById('bellSound');
+
+  // Firebase real-time listener
+  let lastToken = null;
+  database.ref('currentToken').on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      const newToken = data || 'C1';  // ✅ Default token set to C1
+
+      if (lastToken !== newToken) {
+        lastToken = newToken;
+
+        bellSound.pause();
+        bellSound.currentTime = 30;
+        bellSound.play();
+
+        setTimeout(() => {
+          bellSound.pause();
+        }, 2000);
+      }
+
+      tokenEl.textContent = newToken;
+    }
+  });
+
+  // Time & Date Display
+  function updateTime() {
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    const dateAlt = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    document.getElementById("dateClock").textContent = time;
+    document.getElementById("dateAlt").textContent = dateAlt;
+  }
+  setInterval(updateTime, 1000);
+  updateTime();
+
+  // Weather Display
+  const apiKey = 'ece698c5756c98857c463ddc98000798';
+  const city = 'Kanavalli';
+
+  async function fetchWeather() {
+    try {
+      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
+      const data = await response.json();
+      const temp = data.main.temp.toFixed(1);
+      const wind = data.wind.speed.toFixed(1);
+      document.getElementById("temperature").textContent = `${temp}°C`;
+      document.getElementById("wind").textContent = `${wind} km/h`;
+    } catch (error) {
+      document.getElementById("temperature").textContent = `--°C`;
+      document.getElementById("wind").textContent = `-- km/h`;
+    }
+  }
+
+  fetchWeather();
+  setInterval(fetchWeather, 600000); // every 10 min
+</script>
+</body>
+</html>
