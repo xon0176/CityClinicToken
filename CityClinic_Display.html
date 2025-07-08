@@ -149,7 +149,8 @@
   // Realtime token update listener
   database.ref('currentToken').on('value', (snapshot) => {
     const data = snapshot.val();
-    const newToken = data || 'C1';
+    const newToken = data.token || '--';
+
 
     if (lastToken !== newToken) {
       lastToken = newToken;
