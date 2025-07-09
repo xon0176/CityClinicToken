@@ -32,12 +32,12 @@
       height: auto;
     }
     .token-label {
-      font-size: 4.5vw;
+      font-size: 3.2em;
       margin-bottom: 0.4em;
       font-weight: 500;
     }
     .token-number {
-      font-size: 18vw;
+      font-size: 12.5em;
       font-weight: bold;
       color: #ffffff;
       margin-bottom: 0.2em;
@@ -52,7 +52,7 @@
       100% { opacity: 1; }
     }
     .token-text {
-      font-size: 3.5vw;
+      font-size: 2.8em;
     }
     .info-row {
       position: fixed;
@@ -61,10 +61,10 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 2.8vw;
+      font-size: 2.1em;
       color: #fff;
       opacity: 0.95;
-      gap: 8vw;
+      gap: 250px;
     }
     .info-box {
       width: 200px;
@@ -76,7 +76,7 @@
       width: 100%;
       background: #000;
       color: #ffffff;
-      font-size: 3vw;
+      font-size: 2.4em;
       overflow: hidden;
       white-space: nowrap;
     }
@@ -90,7 +90,7 @@
       100% { transform: translateX(-100%); }
     }
 
-    /* 🔲 Fullscreen popup */
+    /* 🔲 Fullscreen popup box */
     #fullscreenBox {
       position: fixed;
       top: 50px;
@@ -233,7 +233,6 @@
   fetchWeather();
   setInterval(fetchWeather, 600000);
 
-  // Show popup
   window.onload = () => {
     const box = document.getElementById('fullscreenBox');
     box.style.display = 'block';
