@@ -41,6 +41,15 @@
       font-weight: bold;
       color: #ffffff;
       margin-bottom: 0.2em;
+      transition: transform 0.2s ease;
+    }
+    .token-number.blink {
+      animation: blink 0.6s ease-in-out 3;
+    }
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0; }
+      100% { opacity: 1; }
     }
     .token-text {
       font-size: 2.8em;
@@ -119,14 +128,14 @@
 </div>
 
 <!-- Bell Sound -->
-<audio id="bellSound" src="https://actions.google.com/sounds/v1/alarms/assorted_computer_sounds.ogg" preload="auto"></audio>
+<audio id="bellSound" src="bell.mp3" preload="auto"></audio>
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-  // ✅ Your Firebase configuration
+  // ✅ Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyC-dN8RtQkDE3eY5q4mQUYiJv9xQCuwnsk",
     authDomain: "cityclinictoken.firebaseapp.com",
@@ -137,32 +146,39 @@
     appId: "1:196394231581:web:08b59c5f22608a9246d6d5"
   };
 
-  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const database = firebase.database();
 
-  // DOM Elements
   const tokenEl = document.getElementById('tokenNumber');
   const bellSound = document.getElementById('bellSound');
   let lastToken = null;
+  let lastUpdate = null;
 
-  // Realtime token update listener
+  // Realtime Firebase listener
   database.ref('currentToken').on('value', (snapshot) => {
     const data = snapshot.val();
-    const newToken = data.token || '--';
+    if (data) {
+      const newToken = data.token || '--';
+      const updatedAt = data.updatedAt || 0;
 
+      // Check if token or timestamp changed
+      if (lastToken !== newToken || lastUpdate !== updatedAt) {
+        lastToken = newToken;
+        lastUpdate = updatedAt;
 
-    if (lastToken !== newToken) {
-      lastToken = newToken;
-      bellSound.pause();
-      bellSound.currentTime = 30;
-      bellSound.play();
-      setTimeout(() => {
+        // 🔔 Play bell
         bellSound.pause();
-      }, 2000);
-    }
+        bellSound.currentTime = 0;
+        bellSound.play();
 
-    tokenEl.textContent = newToken;
+        // ✨ Blink effect
+        tokenEl.classList.remove('blink');
+        void tokenEl.offsetWidth; // restart animation
+        tokenEl.classList.add('blink');
+      }
+
+      tokenEl.textContent = newToken;
+    }
   });
 
   // Date & Time updater
