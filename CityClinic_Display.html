@@ -32,12 +32,12 @@
       height: auto;
     }
     .token-label {
-      font-size: 3.2em;
+      font-size: 60px;
       margin-bottom: 0.4em;
       font-weight: 500;
     }
     .token-number {
-      font-size: 12.5em;
+      font-size: 180px;
       font-weight: bold;
       color: #ffffff;
       margin-bottom: 0.2em;
@@ -52,7 +52,7 @@
       100% { opacity: 1; }
     }
     .token-text {
-      font-size: 2.8em;
+      font-size: 50px;
     }
     .info-row {
       position: fixed;
@@ -61,7 +61,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 2.1em;
+      font-size: 36px;
       color: #fff;
       opacity: 0.95;
       gap: 250px;
@@ -76,7 +76,7 @@
       width: 100%;
       background: #000;
       color: #ffffff;
-      font-size: 2.4em;
+      font-size: 36px;
       overflow: hidden;
       white-space: nowrap;
     }
@@ -90,7 +90,7 @@
       100% { transform: translateX(-100%); }
     }
 
-    /* 🔲 Fullscreen popup box */
+    /* Fullscreen popup */
     #fullscreenBox {
       position: fixed;
       top: 50px;
@@ -153,15 +153,15 @@
   </div>
 </div>
 
-<!-- 🔔 Bell Sound -->
+<!-- Bell Sound -->
 <audio id="bellSound" src="bell.mp3" preload="auto"></audio>
 
-<!-- 🔲 Fullscreen Popup -->
+<!-- Fullscreen Box -->
 <div id="fullscreenBox">
   <button onclick="openFullscreen()">🔲 Go Full Screen</button>
 </div>
 
-<!-- Firebase SDK -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
@@ -182,7 +182,6 @@
   const bellSound = document.getElementById('bellSound');
   let lastToken = null;
   let lastUpdate = null;
-  let hasEnteredFullscreen = false;
 
   database.ref('currentToken').on('value', (snapshot) => {
     const data = snapshot.val();
@@ -233,6 +232,7 @@
   fetchWeather();
   setInterval(fetchWeather, 600000);
 
+  // Fullscreen popup
   window.onload = () => {
     const box = document.getElementById('fullscreenBox');
     box.style.display = 'block';
@@ -240,24 +240,13 @@
       box.style.display = 'none';
     }, 10000);
   };
-
   function openFullscreen() {
     const el = document.documentElement;
-    if (!hasEnteredFullscreen) {
-      if (el.requestFullscreen) el.requestFullscreen();
-      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-      else if (el.msRequestFullscreen) el.msRequestFullscreen();
-      hasEnteredFullscreen = true;
-    }
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.msRequestFullscreen) el.msRequestFullscreen();
     document.getElementById('fullscreenBox').style.display = 'none';
   }
-
-  document.addEventListener('keydown', (e) => {
-    const box = document.getElementById('fullscreenBox');
-    if (!hasEnteredFullscreen && box.style.display === 'block' && (e.key === 'Enter' || e.key === ' ')) {
-      openFullscreen();
-    }
-  });
 </script>
 
 </body>
