@@ -32,12 +32,12 @@
       height: auto;
     }
     .token-label {
-      font-size: 3.2em;
+      font-size: 4.5vw;
       margin-bottom: 0.4em;
       font-weight: 500;
     }
     .token-number {
-      font-size: 12.5em;
+      font-size: 18vw;
       font-weight: bold;
       color: #ffffff;
       margin-bottom: 0.2em;
@@ -52,7 +52,7 @@
       100% { opacity: 1; }
     }
     .token-text {
-      font-size: 2.8em;
+      font-size: 3.5vw;
     }
     .info-row {
       position: fixed;
@@ -61,10 +61,10 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 2.1em;
+      font-size: 2.8vw;
       color: #fff;
       opacity: 0.95;
-      gap: 250px;
+      gap: 8vw;
     }
     .info-box {
       width: 200px;
@@ -76,7 +76,7 @@
       width: 100%;
       background: #000;
       color: #ffffff;
-      font-size: 2.4em;
+      font-size: 3vw;
       overflow: hidden;
       white-space: nowrap;
     }
@@ -90,7 +90,7 @@
       100% { transform: translateX(-100%); }
     }
 
-    /* 🔲 Fullscreen popup box */
+    /* 🔲 Fullscreen popup */
     #fullscreenBox {
       position: fixed;
       top: 50px;
@@ -184,7 +184,6 @@
   let lastUpdate = null;
   let hasEnteredFullscreen = false;
 
-  // 🔁 Firebase Token Listener
   database.ref('currentToken').on('value', (snapshot) => {
     const data = snapshot.val();
     if (data) {
@@ -208,7 +207,6 @@
     }
   });
 
-  // 🕒 Clock
   function updateTime() {
     const now = new Date();
     const time = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
@@ -219,7 +217,6 @@
   setInterval(updateTime, 1000);
   updateTime();
 
-  // 🌦️ Weather
   const apiKey = 'ece698c5756c98857c463ddc98000798';
   const city = 'Kanavalli';
   async function fetchWeather() {
@@ -236,7 +233,7 @@
   fetchWeather();
   setInterval(fetchWeather, 600000);
 
-  // 🔲 Show Fullscreen Prompt
+  // Show popup
   window.onload = () => {
     const box = document.getElementById('fullscreenBox');
     box.style.display = 'block';
@@ -245,10 +242,9 @@
     }, 10000);
   };
 
-  // ✅ One-time fullscreen
   function openFullscreen() {
+    const el = document.documentElement;
     if (!hasEnteredFullscreen) {
-      const el = document.documentElement;
       if (el.requestFullscreen) el.requestFullscreen();
       else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
       else if (el.msRequestFullscreen) el.msRequestFullscreen();
@@ -257,7 +253,6 @@
     document.getElementById('fullscreenBox').style.display = 'none';
   }
 
-  // ✅ Enter/Space keyboard control
   document.addEventListener('keydown', (e) => {
     const box = document.getElementById('fullscreenBox');
     if (!hasEnteredFullscreen && box.style.display === 'block' && (e.key === 'Enter' || e.key === ' ')) {
