@@ -89,8 +89,6 @@
       0% { transform: translateX(0%); }
       100% { transform: translateX(-100%); }
     }
-
-    /* Fullscreen popup */
     #fullscreenBox {
       position: fixed;
       top: 50px;
@@ -153,10 +151,10 @@
   </div>
 </div>
 
-<!-- Bell Sound -->
+<!-- 🔔 Bell Sound -->
 <audio id="bellSound" src="bell.mp3" preload="auto"></audio>
 
-<!-- Fullscreen Box -->
+<!-- ⛶ Fullscreen Popup -->
 <div id="fullscreenBox">
   <button onclick="openFullscreen()">🔲 Go Full Screen</button>
 </div>
@@ -183,22 +181,6 @@
   let lastToken = null;
   let lastUpdate = null;
 
-  // ✅ Kannada voice announcement
-  function speakKannada(token) {
-  const numberOnly = token.replace(/^[A-Za-z]+/, '');  // remove 'C' or any letters
-  const sentence = `ಟೋಕನ್ ${numberOnly}, ದಯವಿಟ್ಟು ಡಾಕ್ಟರ್ ಅವರನ್ನು ಭೇಟಿಯಾಗಿರಿ.`;
-  const msg = new SpeechSynthesisUtterance(sentence);
-  msg.lang = 'kn-IN';
-  msg.rate = 0.9;
-
-  const voices = speechSynthesis.getVoices();
-  const knVoice = voices.find(v => v.lang.startsWith("kn") || v.name.includes("Kannada"));
-  if (knVoice) msg.voice = knVoice;
-
-  speechSynthesis.speak(msg);
-}
-
-  // 🔁 Firebase listener
   database.ref('currentToken').on('value', (snapshot) => {
     const data = snapshot.val();
     if (data) {
@@ -209,27 +191,45 @@
         lastToken = newToken;
         lastUpdate = updatedAt;
 
-        bellSound.pause();
-        bellSound.currentTime = 0;
-        bellSound.play();
-
         tokenEl.classList.remove('blink');
         void tokenEl.offsetWidth;
         tokenEl.classList.add('blink');
 
-// Speak after short delay (700ms)
-  setTimeout(() => {
-  speakKannada(newToken);
-}, 700);
- 
-        // ✅ Kannada announcement
+        // ✅ Play bell → then speak
+        try {
+          bellSound.pause();
+          bellSound.currentTime = 0;
+          bellSound.play().then(() => {
+            setTimeout(() => {
+              speakKannada(newToken);
+            }, 800);
+          }).catch(() => {
+            speakKannada(newToken); // Fallback
+          });
+        } catch (e) {
+          speakKannada(newToken);
+        }
       }
 
       tokenEl.textContent = newToken;
     }
   });
 
-  // 🕒 Clock
+  function speakKannada(token) {
+    const numberOnly = token.replace(/^[A-Za-z]+/, '');
+    const sentence = `ಟೋಕನ್ ${numberOnly}, ದಯವಿಟ್ಟು ಡಾಕ್ಟರ್ ಅವರನ್ನು ಭೇಟಿಯಾಗಿರಿ.`;
+    const msg = new SpeechSynthesisUtterance(sentence);
+    msg.lang = 'kn-IN';
+    msg.rate = 0.9;
+
+    const voices = speechSynthesis.getVoices();
+    const knVoice = voices.find(v => v.lang.startsWith("kn") || v.name.includes("Kannada"));
+    if (knVoice) msg.voice = knVoice;
+
+    speechSynthesis.speak(msg);
+  }
+  speechSynthesis.onvoiceschanged = () => {};
+
   function updateTime() {
     const now = new Date();
     const time = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
@@ -240,7 +240,6 @@
   setInterval(updateTime, 1000);
   updateTime();
 
-  // 🌤️ Weather
   const apiKey = 'ece698c5756c98857c463ddc98000798';
   const city = 'Kanavalli';
   async function fetchWeather() {
@@ -249,15 +248,14 @@
       const data = await response.json();
       document.getElementById("temperature").textContent = `${data.main.temp.toFixed(1)}°C`;
       document.getElementById("wind").textContent = `${data.wind.speed.toFixed(1)} km/h`;
-    } catch {
-      document.getElementById("temperature").textContent = '--°C';
-      document.getElementById("wind").textContent = '-- km/h';
+    } catch (error) {
+      document.getElementById("temperature").textContent = `--°C`;
+      document.getElementById("wind").textContent = `-- km/h`;
     }
   }
   fetchWeather();
-  setInterval(fetchWeather, 600000);
+  setInterval(fetchWeather, 600000); // 10 min
 
-  // 🔲 Fullscreen prompt
   window.onload = () => {
     const box = document.getElementById('fullscreenBox');
     box.style.display = 'block';
@@ -272,9 +270,6 @@
     else if (el.msRequestFullscreen) el.msRequestFullscreen();
     document.getElementById('fullscreenBox').style.display = 'none';
   }
-
-  // Force voice load for some browsers
-  speechSynthesis.onvoiceschanged = () => {};
 </script>
 
 </body>
