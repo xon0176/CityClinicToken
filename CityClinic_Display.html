@@ -185,17 +185,18 @@
 
   // ✅ Kannada voice announcement
   function speakKannada(token) {
-    const sentence = `ಟೋಕನ್ ${token}, ದಯವಿಟ್ಟು ಡಾಕ್ಟರ್ ಅವರನ್ನು ಭೇಟಿಯಾಗಿರಿ.`;
-    const msg = new SpeechSynthesisUtterance(sentence);
-    msg.lang = 'kn-IN';
-    msg.rate = 0.9;
+  const numberOnly = token.replace(/^[A-Za-z]+/, '');  // remove 'C' or any letters
+  const sentence = `ಟೋಕನ್ ${numberOnly}, ದಯವಿಟ್ಟು ಡಾಕ್ಟರ್ ಅವರನ್ನು ಭೇಟಿಯಾಗಿರಿ.`;
+  const msg = new SpeechSynthesisUtterance(sentence);
+  msg.lang = 'kn-IN';
+  msg.rate = 0.9;
 
-    const voices = speechSynthesis.getVoices();
-    const knVoice = voices.find(v => v.lang.startsWith("kn") || v.name.includes("Kannada"));
-    if (knVoice) msg.voice = knVoice;
+  const voices = speechSynthesis.getVoices();
+  const knVoice = voices.find(v => v.lang.startsWith("kn") || v.name.includes("Kannada"));
+  if (knVoice) msg.voice = knVoice;
 
-    speechSynthesis.speak(msg);
-  }
+  speechSynthesis.speak(msg);
+}
 
   // 🔁 Firebase listener
   database.ref('currentToken').on('value', (snapshot) => {
@@ -216,7 +217,12 @@
         void tokenEl.offsetWidth;
         tokenEl.classList.add('blink');
 
-        speakKannada(newToken); // ✅ Kannada announcement
+// Speak after short delay (700ms)
+  setTimeout(() => {
+  speakKannada(newToken);
+}, 700);
+ 
+        // ✅ Kannada announcement
       }
 
       tokenEl.textContent = newToken;
