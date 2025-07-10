@@ -37,7 +37,7 @@
       font-weight: 500;
     }
     .token-number {
-      font-size: 180px;
+      font-size: 300px;
       font-weight: bold;
       color: #ffffff;
       margin-bottom: 0.2em;
@@ -183,6 +183,21 @@
   let lastToken = null;
   let lastUpdate = null;
 
+  // ✅ Kannada voice announcement
+  function speakKannada(token) {
+    const sentence = `ಟೋಕನ್ ${token}, ದಯವಿಟ್ಟು ಡಾಕ್ಟರ್ ಅವರನ್ನು ಭೇಟಿಯಾಗಿರಿ.`;
+    const msg = new SpeechSynthesisUtterance(sentence);
+    msg.lang = 'kn-IN';
+    msg.rate = 0.9;
+
+    const voices = speechSynthesis.getVoices();
+    const knVoice = voices.find(v => v.lang.startsWith("kn") || v.name.includes("Kannada"));
+    if (knVoice) msg.voice = knVoice;
+
+    speechSynthesis.speak(msg);
+  }
+
+  // 🔁 Firebase listener
   database.ref('currentToken').on('value', (snapshot) => {
     const data = snapshot.val();
     if (data) {
@@ -200,12 +215,15 @@
         tokenEl.classList.remove('blink');
         void tokenEl.offsetWidth;
         tokenEl.classList.add('blink');
+
+        speakKannada(newToken); // ✅ Kannada announcement
       }
 
       tokenEl.textContent = newToken;
     }
   });
 
+  // 🕒 Clock
   function updateTime() {
     const now = new Date();
     const time = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
@@ -216,6 +234,7 @@
   setInterval(updateTime, 1000);
   updateTime();
 
+  // 🌤️ Weather
   const apiKey = 'ece698c5756c98857c463ddc98000798';
   const city = 'Kanavalli';
   async function fetchWeather() {
@@ -224,15 +243,15 @@
       const data = await response.json();
       document.getElementById("temperature").textContent = `${data.main.temp.toFixed(1)}°C`;
       document.getElementById("wind").textContent = `${data.wind.speed.toFixed(1)} km/h`;
-    } catch (error) {
-      document.getElementById("temperature").textContent = `--°C`;
-      document.getElementById("wind").textContent = `-- km/h`;
+    } catch {
+      document.getElementById("temperature").textContent = '--°C';
+      document.getElementById("wind").textContent = '-- km/h';
     }
   }
   fetchWeather();
   setInterval(fetchWeather, 600000);
 
-  // Fullscreen popup
+  // 🔲 Fullscreen prompt
   window.onload = () => {
     const box = document.getElementById('fullscreenBox');
     box.style.display = 'block';
@@ -247,6 +266,9 @@
     else if (el.msRequestFullscreen) el.msRequestFullscreen();
     document.getElementById('fullscreenBox').style.display = 'none';
   }
+
+  // Force voice load for some browsers
+  speechSynthesis.onvoiceschanged = () => {};
 </script>
 
 </body>
