@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="kn">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -37,7 +37,7 @@
       font-weight: 500;
     }
     .token-number {
-      font-size: 300px;
+      font-size: 180px;
       font-weight: bold;
       color: #ffffff;
       margin-bottom: 0.2em;
@@ -123,7 +123,7 @@
   </div>
   <div class="right">
     <div class="token-label">Now serving</div>
-    <div class="token-number" id="tokenNumber">C1</div>
+    <div class="token-number" id="tokenNumber">--</div>
     <div class="token-text">Number</div>
   </div>
 </div>
@@ -151,15 +151,15 @@
   </div>
 </div>
 
-<!-- 🔔 Bell Sound -->
+<!-- Bell Sound -->
 <audio id="bellSound" src="bell.mp3" preload="auto"></audio>
 
-<!-- ⛶ Fullscreen Popup -->
+<!-- Fullscreen Prompt -->
 <div id="fullscreenBox">
   <button onclick="openFullscreen()">🔲 Go Full Screen</button>
 </div>
 
-<!-- Firebase -->
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
@@ -173,6 +173,7 @@
     messagingSenderId: "196394231581",
     appId: "1:196394231581:web:08b59c5f22608a9246d6d5"
   };
+
   firebase.initializeApp(firebaseConfig);
   const database = firebase.database();
 
@@ -191,45 +192,26 @@
         lastToken = newToken;
         lastUpdate = updatedAt;
 
+        // 🔔 Bell
+        bellSound.pause();
+        bellSound.currentTime = 0;
+        bellSound.play();
+
+        // 🎙️ Kannada MP3 from GitHub
+        const audio = new Audio(`https://xon0176.github.io/CityClinicToken/tokensounds/${newToken}.mp3`);
+        audio.play();
+
+        // ✨ Blink
         tokenEl.classList.remove('blink');
         void tokenEl.offsetWidth;
         tokenEl.classList.add('blink');
-
-        // ✅ Play bell → then speak
-        try {
-          bellSound.pause();
-          bellSound.currentTime = 0;
-          bellSound.play().then(() => {
-            setTimeout(() => {
-              speakKannada(newToken);
-            }, 800);
-          }).catch(() => {
-            speakKannada(newToken); // Fallback
-          });
-        } catch (e) {
-          speakKannada(newToken);
-        }
       }
 
       tokenEl.textContent = newToken;
     }
   });
 
-  function speakKannada(token) {
-    const numberOnly = token.replace(/^[A-Za-z]+/, '');
-    const sentence = `ಟೋಕನ್ ${numberOnly}, ದಯವಿಟ್ಟು ಡಾಕ್ಟರ್ ಅವರನ್ನು ಭೇಟಿಯಾಗಿರಿ.`;
-    const msg = new SpeechSynthesisUtterance(sentence);
-    msg.lang = 'kn-IN';
-    msg.rate = 0.9;
-
-    const voices = speechSynthesis.getVoices();
-    const knVoice = voices.find(v => v.lang.startsWith("kn") || v.name.includes("Kannada"));
-    if (knVoice) msg.voice = knVoice;
-
-    speechSynthesis.speak(msg);
-  }
-  speechSynthesis.onvoiceschanged = () => {};
-
+  // Time
   function updateTime() {
     const now = new Date();
     const time = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
@@ -240,6 +222,7 @@
   setInterval(updateTime, 1000);
   updateTime();
 
+  // Weather
   const apiKey = 'ece698c5756c98857c463ddc98000798';
   const city = 'Kanavalli';
   async function fetchWeather() {
@@ -254,8 +237,9 @@
     }
   }
   fetchWeather();
-  setInterval(fetchWeather, 600000); // 10 min
+  setInterval(fetchWeather, 600000);
 
+  // Fullscreen Box
   window.onload = () => {
     const box = document.getElementById('fullscreenBox');
     box.style.display = 'block';
